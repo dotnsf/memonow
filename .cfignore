@@ -1,0 +1,5 @@
+node_modules/
+pouchdb/
+package-lock.json
+settings.js.*
+

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+
+<link rel="shortcut icon" href="./memonow.png" type="image/png"/>
+<link rel="icon" href="./memonow.png" type="image/png"/>
+<link rel="apple-touch-icon" href="./memonow57.png"/>
+
+<title>MemoNow</title>
+<script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<script src="//cdn.jsdelivr.net/pouchdb/5.4.5/pouchdb.min.js"></script>
+<script src="/cvi_busy_lib.js"></script>
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css"/>
+<script src="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+<script>
+var cookie_name = 'cookie_user_id';
+var user_id = getCookie();
+if( !user_id || user_id === undefined ){
+<% if( user_id ){ %>
+  user_id = '<%= user_id %>';
+  setCookie( user_id );
+
+  location.href = '/';
+<% } %>
+}
+
+//. dotnsf-node-red-cloudantNoSQLDB
+var localDB = new PouchDB( '<%= settings.db_name %>' );
+localDB.destroy( function( err, res ){
+  if( err ){
+    console.log( err );
+  }else{
+    localDB = new PouchDB( '<%= settings.db_name %>' );
+  }
+});
+
+var remoteDBURL = 'https://<%= settings.db_username %>:<%= settings.db_password %>@<%= settings.db_username %>.cloudant.com/<%= settings.db_name %>';
+var remoteDB = new PouchDB( remoteDBURL );
+
+var map = null;
+var marker = null;
+
+var simplemde= null;
+$(function(){
+  if( user_id ){
+    simplemde = new SimpleMDE({
+      element: document.getElementById( "memo_body" ),
+      forceSync: true,
+      spellChecker: false
+    });
+    
+    //. created
+    var dt = new Date();
+    var yyyy = dt.getFullYear();
+    var mm = dt.getMonth() + 1;
+    var dd = dt.getDate();
+    var hh = dt.getHours();
+    var nn = dt.getMinutes();
+    var ss = dt.getSeconds();
+    var ymdhns = yyyy + "-" 
+      + ( mm < 10 ? '0' : '' ) + mm 
+      + "-" + ( dd < 10 ? '0' : '' ) + dd
+      + " " + ( hh < 10 ? '0' : '' ) + hh
+      + ":" + ( nn < 10 ? '0' : '' ) + nn
+      + ":" + ( ss < 10 ? '0' : '' ) + ss;
+    //$('#memo_created').val( ymdhns );
+    $('#memo_created').val( dt );
+
+    //. latlng
+    if( navigator.geolocation ){
+      navigator.geolocation.getCurrentPosition( function( position ){
+        var lat = position.coords.latitude; 
+        var lng = position.coords.longitude; 
+        var latlng = '[' + lat + ',' + lng + ']';
+        $('#memo_latlng').val( latlng );
+
+        var subject = ymdhns + ' ' + latlng;
+        $('#memo_subject').val( subject );
+      }, function( error ){
+        $('#memo_subject').val( ymdhns );
+      });
+    }else{
+      $('#memo_subject').val( ymdhns );
+    }
+
+    remote2local( user_id );
+    //replicateFromRemote();
+
+    setInterval( replicateToRemote, 60000 );
+
+    $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()">' + user_id + '</a></li>' );
+  }else{
+    $('#navbar').html( '<li><a href="#" onClick="login()">Login</a></li>' );
+    $('#POST').prop( "disabled", true );
+    $('#DELETE').prop( "disabled", true );
+  }
+});
+
+function getMemos( active_id ){
+  var memos = [];
+  localDB.allDocs( { include_docs: true } ).then( function( docs ){
+    if( docs && docs.rows && docs.rows.length ){
+      docs.rows.forEach( function( row ){
+        memos.push( row.doc );
+      });
+    }
+
+    $('#memos_list').html( '' );
+    memos.forEach( function( memo ){
+      var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit(' + JSON.stringify( memo ) + ')\'>'
+        + '<h3 class=\'list-group-item-heading\'>' + memo.subject + '</h3>'
+        + '<p class=\'list-group-item-text\'>' + memo.updated + '</p>'
+        + '</a>';
+      $('#memos_list').prepend( a );
+    });
+    var a = '<a id=\'a_new\' class=\'list-group-item\' href=\'#\' onClick=\'edit({"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""})\'>'
+      + '<h3 class=\'list-group-item-heading\'>(NEW)</h3>'
+      + '<p class=\'list-group-item-text\'></p>'
+      + '</a>';
+    $('#memos_list').prepend( a );
+
+    activeMemo( active_id );
+  }).catch( function( err ){
+    console.log( err );
+  });
+}
+
+function deleteMemo(){
+  if( window.confirm( 'このデータを削除してよろしいですか？' ) ){
+    var id = $('#memo_id').val();
+    var rev = $('#memo_rev').val();
+    localDB.remove( id, rev )
+      .then( function( result ){
+      }).catch( function( err ){
+        console.log( err );
+      });
+    getMemos();
+    replicateToRemote();
+  }
+}
+
+function addMemo(){
+  var id = $('#memo_id').val();
+  var rev = $('#memo_rev').val();
+  var subject = $('#memo_subject').val();
+  //var body = $('#memo_body').val();
+  var body = simplemde.value();
+  var created = $('#memo_created').val();
+  var latlng = $('#memo_latlng').val();
+  var data = { subject: subject, body: body, created: created, latlng: latlng, user_id: user_id };
+
+  var updated = new Date();
+  var _id = id ? id : getUUID();
+  data['_id'] = '' + _id;
+  if( rev ){
+    data['_rev'] = '' + rev;
+  }
+  data['updated'] = updated;
+  console.log( data );
+
+  localDB.put( data )
+    .then( function( res ){
+    }).catch( function( err ){
+      console.log( err );
+    });
+  getMemos(_id);
+  replicateToRemote();
+}
+
+function getUUID( myStrong ){
+  var strong = 1000;
+  if( myStrong ) strong = myStrong;
+  return new Date().getTime().toString(16) + Math.floor(strong*Math.random()).toString(16);
+}
+
+function edit( memo ){
+  $('.list-group-item').removeClass( 'active' );
+  if( memo._id ){
+    $('#a_'+memo._id).addClass( 'active' );
+  }else{
+    $('#a_new').addClass( 'active' );
+  }
+
+  $('#memo_id').val( memo._id );
+  $('#memo_rev').val( memo._rev );
+  if( memo.created ){
+    $('#memo_created').val( memo.created );
+  }else{
+    $('#memo_created').val( new Date() );
+  }
+  $('#memo_latlng').val( memo.latlng );
+  $('#memo_subject').val( memo.subject );
+  
+  $('#memo_body').val( memo.body );
+  simplemde.value( memo.body );
+
+  $('#latlng_map').html( '' );
+  var latlng = eval( memo.latlng );
+  if( latlng && latlng.length && latlng[0] && latlng[1] ){
+    if( map == null ){
+      map = L.map( 'latlng_map' ).setView( latlng, 15 );
+      L.tileLayer(
+        'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: 'Map data &copy; <a href="http://openstreetmap.org/">OpenStreetMap</a>',
+          maxZoom: 18
+        }
+      ).addTo( map );
+      marker = L.marker( latlng ).addTo( map );
+    }else{
+      map.setView( latlng, 15 );
+      marker.setLatLng( new L.LatLng( latlng[0], latlng[1] ) );
+    }
+    //$('.leaflet-container').css( 'overflow', 'initial' );
+  }
+}
+
+function activeMemo( id ){
+  var memo = null;
+  if( id ){
+    memo = localDB.get( id );
+  }else{
+    memo = {"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""};
+  }
+
+  edit( memo );
+}
+
+
+function remote2local( user_id ){
+  $.ajax({
+    type: 'GET',
+    url: '/query?user_id=' + user_id,
+    success: function( result ){
+      var result = JSON.parse( result );
+      if( result.status && result.result.docs ){
+        var docs = [];
+        result.result.docs.forEach( function( doc ){
+          delete doc['_rev']; //. これをしないと bulkDocs でエラー？
+          docs.push( doc );
+        });
+        localDB.bulkDocs( docs )
+          .then( function( r1 ){
+          }).catch( function( e1 ){
+            console.log( e1 );
+          });
+      }
+      getMemos();
+    },
+    error: function( err ){
+      console.log( err );
+    }
+  });
+}
+
+function replicateToRemote(){
+  localDB.replicate.to(remoteDB)
+    .on( 'complete', function(){
+      console.log( 'replicate_local2remote() Complete: ' );
+    }).on( 'error', function( err ){
+      console.log( 'replicate_local2remote() Error: ' );
+      console.log( err );
+    });
+}
+
+function replicateFromRemote(){
+  //localDB.replicate.from(remoteDB, {"selector": {"user_id": { "$eq": user_id } } } )
+  localDB.replicate.from(remoteDB, {query_params: {user_id: user_id} } )
+    .on( 'complete', function(){
+      console.log( 'replicateFromRemote() Complete: ' );
+      getMemos();
+    }).on( 'error', function( err ){
+      console.log( 'replicateFromRemote() Error: ' );
+      console.log( err );
+    });
+}
+
+function login(){
+  user_id = getCookie();
+  if( user_id ){
+    location.href = '/';
+  }else{
+    location.href = '/twitter';
+  }
+}
+function logout(){
+  removeCookie();
+  location.href = '/';
+}
+
+
+function getCookie(){
+  var r = null;
+
+  var cookies = document.cookie.split( ';' );
+  cookies.forEach( function( value ){
+    var t = value.split( '=' );
+    if( t[0] == cookie_name ){
+      r = t[1];
+    }
+  });
+
+  return r;
+}
+function setCookie( value ){
+  var maxage = 3650 * 24 * 60 * 60;
+  var cookie_var = cookie_name + '=' + value + ';max-age=' + maxage + ';path=/';
+  document.cookie = cookie_var;
+}
+function removeCookie(){
+  document.cookie = cookie_name + '=;max-age=0;path=/';
+}
+</script>
+<style>
+body{
+  width:100%;
+  height:100%;
+}
+div{
+  height:100%;
+}
+#memo_subject{
+  width:100%;
+}
+#memo_body{
+  width:100%;
+  height:50%;
+}
+#latlng_map{
+  width:100%;
+  height:40%;
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a href="/" class="navbar-brand">MemoNow</a>
+    </div>
+    <ul class="nav navbar-nav navbar-right" id="navbar">
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-md-9 col-md-push-3">
+      <!-- Body -->
+      <input id="memo_id" type="hidden"/>
+      <input id="memo_rev" type="hidden"/>
+      <input id="memo_created" type="hidden"/>
+      <input id="memo_latlng" type="hidden"/>
+      <input id="memo_subject" type="text" placeholder="subject"/><br/>
+      <textarea id="memo_body" placeholder="body"></textarea><br/>
+      <div id="latlng_map"></div><br/>
+      <input type="button" value="DELETE" class="btn btn-danger pull-right" id="DELETE" onClick="deleteMemo()"/>
+      <input type="button" value="POST" class="btn btn-primary pull-right" id="POST" onClick="addMemo()"/>
+    </div>
+    <div class="col-xs-12 col-md-3 col-md-pull-9">
+      <!-- Sidebar -->
+      <div class="list-group" id="memos_list">
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
