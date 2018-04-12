@@ -47,6 +47,7 @@ localDB.destroy( function( err, res ){
 
 var remoteDBURL = 'https://<%= settings.db_username %>:<%= settings.db_password %>@<%= settings.db_username %>.cloudant.com/<%= settings.db_name %>';
 var remoteDB = new PouchDB( remoteDBURL );
+var doc_ids = [];
 
 var map = null;
 var marker = null;
@@ -94,30 +95,23 @@ $(function(){
       $('#memo_subject').val( ymdhns );
     }
 
-    remoteDB.sync( localDB, {
-      //filter: 'mydesign/myfilter',
-      //query_params: { user_id: user_id },
-      live: true,
-      retry: true
-    }).on( 'change', function( info ){
-      console.log( 'db.sync() change: ' );
-      console.log( info );
-      getMemos();
-    }).on( 'paused', function( info ){
-      console.log( 'db.sync() paused: ' );
-      getMemos();
-    }).on( 'active', function(){
-      console.log( 'db.sync() active: ' );
-    }).on( 'denied', function( err ){
-      console.log( 'db.sync() denied: ' );
-      console.log( err );
-    }).on( 'complete', function( info ){
-      console.log( 'db.sync() Complete: ' );
-      console.log( info );
-      getMemos();
-    }).on( 'error', function( err ){
-      console.log( 'db.sync() error: ' );
-      console.log( err );
+    $.ajax({
+      type: 'GET',
+      url: '/query?user_id=' + user_id,
+      success: function( result ){
+        var result = JSON.parse( result );
+        if( result.status && result.result.docs ){
+          doc_ids = [];
+          result.result.docs.forEach( function( doc ){
+            doc_ids.push( doc._id );
+          });
+
+          syncDB();
+        }
+      },
+      error: function( err ){
+        console.log( err );
+      }
     });
 
     $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()">' + user_id + '</a></li>' );
@@ -139,14 +133,14 @@ function getMemos( active_id ){
 
     $('#memos_list').html( '' );
     memos.forEach( function( memo ){
-      if( memo.user_id && memo.user_id == user_id ){
+//      if( memo.user_id && memo.user_id == user_id ){
         var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit(' + JSON.stringify( memo ) + ')\'>'
           + '<span class="badge">' + memo.user_id + '</span>'
           + '<h3 class=\'list-group-item-heading\'>' + memo.subject + '</h3>'
           + '<p class=\'list-group-item-text\'>' + memo.updated + '</p>'
           + '</a>';
         $('#memos_list').prepend( a );
-      }
+//      }
     });
     var a = '<a id=\'a_new\' class=\'list-group-item\' href=\'#\' onClick=\'edit({"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""})\'>'
       + '<h3 class=\'list-group-item-heading\'>(NEW)</h3>'
@@ -195,6 +189,8 @@ function addMemo(){
 
   localDB.put( data )
     .then( function( res ){
+      
+      doc_ids.push( _id );
     }).catch( function( err ){
       console.log( err );
     });
@@ -258,6 +254,35 @@ function activeMemo( id ){
   }
 
   edit( memo );
+}
+
+function syncDB(){
+  if( remoteDB && localDB && doc_ids ){
+    remoteDB.sync( localDB, {
+      doc_ids: doc_ids,
+      live: true,
+      retry: true
+    }).on( 'change', function( info ){
+      console.log( 'db.sync() change: ' );
+      console.log( info );
+      getMemos();
+    }).on( 'paused', function( info ){
+      console.log( 'db.sync() paused: ' );
+      getMemos();
+    }).on( 'active', function(){
+      console.log( 'db.sync() active: ' );
+    }).on( 'denied', function( err ){
+      console.log( 'db.sync() denied: ' );
+      console.log( err );
+    }).on( 'complete', function( info ){
+      console.log( 'db.sync() Complete: ' );
+      console.log( info );
+      getMemos();
+    }).on( 'error', function( err ){
+      console.log( 'db.sync() error: ' );
+      console.log( err );
+    });
+  }
 }
 
 
