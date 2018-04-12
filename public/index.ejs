@@ -35,6 +35,7 @@ if( !user_id || user_id === undefined ){
 
 //. dotnsf-node-red-cloudantNoSQLDB
 var localDB = new PouchDB( '<%= settings.db_name %>' );
+/*
 localDB.destroy( function( err, res ){
   if( err ){
     console.log( err );
@@ -42,6 +43,7 @@ localDB.destroy( function( err, res ){
     localDB = new PouchDB( '<%= settings.db_name %>' );
   }
 });
+*/
 
 var remoteDBURL = 'https://<%= settings.db_username %>:<%= settings.db_password %>@<%= settings.db_username %>.cloudant.com/<%= settings.db_name %>';
 var remoteDB = new PouchDB( remoteDBURL );
@@ -92,10 +94,31 @@ $(function(){
       $('#memo_subject').val( ymdhns );
     }
 
-    remote2local( user_id );
-    //replicateFromRemote();
-
-    setInterval( replicateToRemote, 60000 );
+    remoteDB.sync( localDB, {
+      //filter: 'mydesign/myfilter',
+      //query_params: { user_id: user_id },
+      live: true,
+      retry: true
+    }).on( 'change', function( info ){
+      console.log( 'db.sync() change: ' );
+      console.log( info );
+      getMemos();
+    }).on( 'paused', function( info ){
+      console.log( 'db.sync() paused: ' );
+      getMemos();
+    }).on( 'active', function(){
+      console.log( 'db.sync() active: ' );
+    }).on( 'denied', function( err ){
+      console.log( 'db.sync() denied: ' );
+      console.log( err );
+    }).on( 'complete', function( info ){
+      console.log( 'db.sync() Complete: ' );
+      console.log( info );
+      getMemos();
+    }).on( 'error', function( err ){
+      console.log( 'db.sync() error: ' );
+      console.log( err );
+    });
 
     $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()">' + user_id + '</a></li>' );
   }else{
@@ -116,11 +139,14 @@ function getMemos( active_id ){
 
     $('#memos_list').html( '' );
     memos.forEach( function( memo ){
-      var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit(' + JSON.stringify( memo ) + ')\'>'
-        + '<h3 class=\'list-group-item-heading\'>' + memo.subject + '</h3>'
-        + '<p class=\'list-group-item-text\'>' + memo.updated + '</p>'
-        + '</a>';
-      $('#memos_list').prepend( a );
+      if( memo.user_id && memo.user_id == user_id ){
+        var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit(' + JSON.stringify( memo ) + ')\'>'
+          + '<span class="badge">' + memo.user_id + '</span>'
+          + '<h3 class=\'list-group-item-heading\'>' + memo.subject + '</h3>'
+          + '<p class=\'list-group-item-text\'>' + memo.updated + '</p>'
+          + '</a>';
+        $('#memos_list').prepend( a );
+      }
     });
     var a = '<a id=\'a_new\' class=\'list-group-item\' href=\'#\' onClick=\'edit({"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""})\'>'
       + '<h3 class=\'list-group-item-heading\'>(NEW)</h3>'
@@ -144,7 +170,7 @@ function deleteMemo(){
         console.log( err );
       });
     getMemos();
-    replicateToRemote();
+    //replicateToRemote();
   }
 }
 
@@ -173,7 +199,7 @@ function addMemo(){
       console.log( err );
     });
   getMemos(_id);
-  replicateToRemote();
+  //replicateToRemote();
 }
 
 function getUUID( myStrong ){
