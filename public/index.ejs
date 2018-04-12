@@ -228,9 +228,10 @@ function edit( memo ){
   $('#memo_body').val( memo.body );
   simplemde.value( memo.body );
 
-  $('#latlng_map').html( '' );
+  $('#latlng_map').css( 'height','0px' );
   var latlng = eval( memo.latlng );
   if( latlng && latlng.length && latlng[0] && latlng[1] ){
+    $('#latlng_map').css( 'height','300px' );
     if( map == null ){
       map = L.map( 'latlng_map' ).setView( latlng, 15 );
       L.tileLayer(
@@ -241,10 +242,10 @@ function edit( memo ){
       ).addTo( map );
       marker = L.marker( latlng ).addTo( map );
     }else{
-      map.setView( latlng, 15 );
-      marker.setLatLng( new L.LatLng( latlng[0], latlng[1] ) );
+      var position = new L.LatLng( latlng[0], latlng[1] );
+      map.setView( position, 15 );
+      marker.setLatLng( position );
     }
-    //$('.leaflet-container').css( 'overflow', 'initial' );
   }
 }
 
@@ -389,7 +390,7 @@ div{
 }
 #latlng_map{
   width:100%;
-  height:40%;
+  height:300px;
 }
 </style>
 </head>
@@ -417,7 +418,7 @@ div{
       <textarea id="memo_body" placeholder="body"></textarea><br/>
       <div id="latlng_map"></div><br/>
       <input type="button" value="DELETE" class="btn btn-danger pull-right" id="DELETE" onClick="deleteMemo()"/>
-      <input type="button" value="POST" class="btn btn-primary pull-right" id="POST" onClick="addMemo()"/>
+      <input type="button" value="SAVE" class="btn btn-primary pull-right" id="POST" onClick="addMemo()"/>
     </div>
     <div class="col-xs-12 col-md-3 col-md-pull-9">
       <!-- Sidebar -->
