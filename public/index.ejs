@@ -35,15 +35,6 @@ if( !user_id || user_id === undefined ){
 
 //. dotnsf-node-red-cloudantNoSQLDB
 var localDB = new PouchDB( '<%= settings.db_name %>' );
-/*
-localDB.destroy( function( err, res ){
-  if( err ){
-    console.log( err );
-  }else{
-    localDB = new PouchDB( '<%= settings.db_name %>' );
-  }
-});
-*/
 
 var remoteDBURL = 'https://<%= settings.db_username %>:<%= settings.db_password %>@<%= settings.db_username %>.cloudant.com/<%= settings.db_name %>';
 var remoteDB = new PouchDB( remoteDBURL );
@@ -52,9 +43,15 @@ var doc_ids = [];
 var map = null;
 var marker = null;
 
+var isXS = false;
 var simplemde= null;
 $(function(){
-  if( user_id ){
+  //var sw = window.parent.screen.width;
+  var sw = window.innerWidth;
+  isXS = ( sw < 768 );
+  console.log( 'sw = ' + sw + ', isXS = ' + isXS );
+
+  if( user_id && !isXS ){
     simplemde = new SimpleMDE({
       element: document.getElementById( "memo_body" ),
       forceSync: true,
@@ -95,10 +92,12 @@ $(function(){
       $('#memo_subject').val( ymdhns );
     }
 
+    var obj = getBusyOverlay( 'viewport', {color:'black', opacity:0.5, text:'取得中', style:'text-decoration:blink; font-weight:bold; font-size:12px; color:white;' } );
     $.ajax({
       type: 'GET',
       url: '/query?user_id=' + user_id,
       success: function( result ){
+        obj.remove();
         var result = JSON.parse( result );
         if( result.status && result.result.docs ){
           doc_ids = [];
@@ -110,6 +109,7 @@ $(function(){
         }
       },
       error: function( err ){
+        obj.remove();
         console.log( err );
       }
     });
@@ -175,7 +175,7 @@ function addMemo(){
   var rev = $('#memo_rev').val();
   var subject = $('#memo_subject').val();
   //var body = $('#memo_body').val();
-  var body = simplemde.value();
+  var body = isXS ? $('#memo_body').val() : simplemde.value();
   var created = $('#memo_created').val();
   var latlng = $('#memo_latlng').val();
   var data = { subject: subject, body: body, created: created, latlng: latlng, user_id: user_id };
@@ -226,7 +226,9 @@ function edit( memo ){
   $('#memo_subject').val( memo.subject );
   
   $('#memo_body').val( memo.body );
-  simplemde.value( memo.body );
+  if( !isXS ){
+    simplemde.value( memo.body );
+  }
 
   $('#latlng_map').css( 'height','0px' );
   $('#category_map').css( 'display','none' );
