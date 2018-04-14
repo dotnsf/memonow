@@ -229,9 +229,11 @@ function edit( memo ){
   simplemde.value( memo.body );
 
   $('#latlng_map').css( 'height','0px' );
+  $('#category_map').css( 'display','none' );
   var latlng = eval( memo.latlng );
   if( latlng && latlng.length && latlng[0] && latlng[1] ){
     $('#latlng_map').css( 'height','300px' );
+    $('#category_map').css( 'display','block' );
     if( map == null ){
       map = L.map( 'latlng_map' ).setView( latlng, 15 );
       L.tileLayer(
@@ -289,54 +291,6 @@ function syncDB( reload ){
 }
 
 
-function remote2local( user_id ){
-  $.ajax({
-    type: 'GET',
-    url: '/query?user_id=' + user_id,
-    success: function( result ){
-      var result = JSON.parse( result );
-      if( result.status && result.result.docs ){
-        var docs = [];
-        result.result.docs.forEach( function( doc ){
-          delete doc['_rev']; //. これをしないと bulkDocs でエラー？
-          docs.push( doc );
-        });
-        localDB.bulkDocs( docs )
-          .then( function( r1 ){
-          }).catch( function( e1 ){
-            console.log( e1 );
-          });
-      }
-      getMemos();
-    },
-    error: function( err ){
-      console.log( err );
-    }
-  });
-}
-
-function replicateToRemote(){
-  localDB.replicate.to(remoteDB)
-    .on( 'complete', function(){
-      console.log( 'replicate_local2remote() Complete: ' );
-    }).on( 'error', function( err ){
-      console.log( 'replicate_local2remote() Error: ' );
-      console.log( err );
-    });
-}
-
-function replicateFromRemote(){
-  //localDB.replicate.from(remoteDB, {"selector": {"user_id": { "$eq": user_id } } } )
-  localDB.replicate.from(remoteDB, {query_params: {user_id: user_id} } )
-    .on( 'complete', function(){
-      console.log( 'replicateFromRemote() Complete: ' );
-      getMemos();
-    }).on( 'error', function( err ){
-      console.log( 'replicateFromRemote() Error: ' );
-      console.log( err );
-    });
-}
-
 function login(){
   user_id = getCookie();
   if( user_id ){
@@ -345,6 +299,7 @@ function login(){
     location.href = '/twitter';
   }
 }
+
 function logout(){
   removeCookie();
   location.href = '/';
@@ -364,13 +319,27 @@ function getCookie(){
 
   return r;
 }
+
 function setCookie( value ){
   var maxage = 3650 * 24 * 60 * 60;
   var cookie_var = cookie_name + '=' + value + ';max-age=' + maxage + ';path=/';
   document.cookie = cookie_var;
 }
+
 function removeCookie(){
   document.cookie = cookie_name + '=;max-age=0;path=/';
+}
+
+
+function show_layer( cat ){
+  var objID = document.getElementById( 'layer_' + cat );
+  if( objID.className == 'close' ){
+    objID.style.display = 'block';
+    objID.className = 'open';
+  }else{
+    objID.style.display = 'none';
+    objID.className = 'close';
+  }
 }
 </script>
 <style>
@@ -416,7 +385,11 @@ div{
       <input id="memo_latlng" type="hidden"/>
       <input id="memo_subject" type="text" placeholder="subject"/><br/>
       <textarea id="memo_body" placeholder="body"></textarea><br/>
-      <div id="latlng_map"></div><br/>
+
+      <div><a href="#" id="category_map" onClick="show_layer('map');">Map</a></div>
+      <div id="layer_map" style="display:none; position:relative;" class="close">
+        <div id="latlng_map"></div>
+      </div>
       <input type="button" value="DELETE" class="btn btn-danger pull-right" id="DELETE" onClick="deleteMemo()"/>
       <input type="button" value="SAVE" class="btn btn-primary pull-right" id="POST" onClick="addMemo()"/>
     </div>
