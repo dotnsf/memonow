@@ -51,12 +51,14 @@ $(function(){
   isXS = ( sw < 768 );
   console.log( 'sw = ' + sw + ', isXS = ' + isXS );
 
-  if( user_id && !isXS ){
-    simplemde = new SimpleMDE({
-      element: document.getElementById( "memo_body" ),
-      forceSync: true,
-      spellChecker: false
-    });
+  if( user_id ){
+    if( !isXS ){
+      simplemde = new SimpleMDE({
+        element: document.getElementById( "memo_body" ),
+        forceSync: true,
+        spellChecker: false
+      });
+    }
     
     //. created
     var dt = new Date();
@@ -115,6 +117,11 @@ $(function(){
     });
 
     $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()">' + user_id + '</a></li>' );
+
+    var a = '<a class="list-group-item list-group-item-warning" href="#">'
+      + '<h3 class="list-group-item-heading">Loading..</h3>'
+      + '</a>';
+    $('#memos_list').prepend( a );
   }else{
     $('#navbar').html( '<li><a href="#" onClick="login()">Login</a></li>' );
     $('#POST').prop( "disabled", true );
@@ -303,8 +310,10 @@ function login(){
 }
 
 function logout(){
-  removeCookie();
-  location.href = '/';
+  if( window.confirm( 'ログアウトしますか？' ) ){
+    removeCookie();
+    location.href = '/';
+  }
 }
 
 
@@ -362,6 +371,9 @@ div{
 #latlng_map{
   width:100%;
   height:300px;
+}
+#category_map{
+  display:none;
 }
 </style>
 </head>

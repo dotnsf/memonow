@@ -122,45 +122,6 @@ app.get( '/query', function( req, res ){
   }
 });
 
-/*
-app.get( '/memos', function( req, res ){
-  var user_id = req.query.user_id;
-  if( !user_id ){
-    res.status( 401 );
-    res.write( JSON.stringify( { status: false, message: 'parameter user_id needed.' }, 2, null ) );
-    res.end();
-  }else{
-    var memos = [];
-    localDB.allDocs( { include_docs: true } ).then( function( docs ){
-      if( docs && docs.rows && docs.rows.length ){
-        docs.rows.forEach( function( row ){
-          if( row.doc && row.doc.user_id == user_id ){
-            memos.push( row.doc );
-          }
-        });
-      }
-      res.write( JSON.stringify( { status: true, memos: memos }, 2, null ) );
-      res.end();
-    }).catch( function( err ){
-      res.write( JSON.stringify( { status: false, message: err }, 2, null ) );
-      res.end();
-    });
-
-  }
-});
-
-app.post( '/memo', function( req, res ){
-  var doc = req.body;
-  if( !( '_id' in doc ) ){
-    doc._id = uuid.v1();
-  }
-  doc.updated = new Date();
-  localDB.put( doc );
-
-  res.write( JSON.stringify( { status: true, doc: doc }, 2, null ) );
-  res.end();
-});
-*/
 
 var port = appEnv.port || 3000;
 app.listen( port );
