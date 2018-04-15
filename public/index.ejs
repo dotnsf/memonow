@@ -116,14 +116,14 @@ $(function(){
       }
     });
 
-    $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()">' + user_id + '</a></li>' );
+    $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()"><span class="glyphicon glyphicon-user"></span> ' + user_id + '</a></li>' );
 
     var a = '<a class="list-group-item list-group-item-warning" href="#">'
       + '<h3 class="list-group-item-heading">Loading..</h3>'
       + '</a>';
     $('#memos_list').prepend( a );
   }else{
-    $('#navbar').html( '<li><a href="#" onClick="login()">Login</a></li>' );
+    $('#navbar').html( '<li><a href="#" onClick="login()"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>' );
     $('#POST').prop( "disabled", true );
     $('#DELETE').prop( "disabled", true );
   }
@@ -379,7 +379,7 @@ div{
 </head>
 <body>
 
-<nav class="navbar navbar-default">
+<div class="navbar navbar-default">
   <div class="container-fluid">
     <div class="navbar-header">
       <a href="/" class="navbar-brand">MemoNow</a>
@@ -387,7 +387,7 @@ div{
     <ul class="nav navbar-nav navbar-right" id="navbar">
     </ul>
   </div>
-</nav>
+</div>
 
 <div class="container">
   <div class="row">
@@ -405,7 +405,8 @@ div{
         <div id="latlng_map"></div>
       </div>
       <input type="button" value="DELETE" class="btn btn-danger pull-right" id="DELETE" onClick="deleteMemo()"/>
-      <input type="button" value="SAVE" class="btn btn-primary pull-right" id="POST" onClick="addMemo()"/>
+      <input type="button" value="SAVE" class="btn btn-success pull-right" id="POST" onClick="addMemo()"/>
+      <br/>
     </div>
     <div class="col-xs-12 col-md-3 col-md-pull-9">
       <!-- Sidebar -->
