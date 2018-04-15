@@ -49,7 +49,7 @@ $(function(){
   //var sw = window.parent.screen.width;
   var sw = window.innerWidth;
   isXS = ( sw < 768 );
-  console.log( 'sw = ' + sw + ', isXS = ' + isXS );
+  //console.log( 'sw = ' + sw + ', isXS = ' + isXS );
 
   if( user_id ){
     if( !isXS ){
@@ -194,7 +194,7 @@ function addMemo(){
     data['_rev'] = '' + rev;
   }
   data['updated'] = updated;
-  console.log( data );
+  //console.log( data );
 
   localDB.put( data )
     .then( function( res ){
@@ -323,8 +323,8 @@ function getCookie(){
   var cookies = document.cookie.split( ';' );
   cookies.forEach( function( value ){
     var t = value.split( '=' );
-    if( t[0] == cookie_name ){
-      r = t[1];
+    if( t[0].trim() == cookie_name ){
+      r = t[1].trim();
     }
   });
 
