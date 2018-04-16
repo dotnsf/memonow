@@ -19,7 +19,7 @@ You can use this app even if you miss online network. In that case, this app wou
 
 - Create Query Index Design Document in that database for **user_id** string field:
 
-    - ``{ "index": { "fields": [ { "name": "user_id", "type": "string" } ] }, "name": "user_id-index", .. }``
+    - ``{ "index": { "fields": [ { "name": "user_id", "type": "string" } ] }, "name": "user_id-index", "type": "text", .. }``
 
 - Set username and password for Cloudant in settings.js as db_username and db_password.
 
