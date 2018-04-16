@@ -15,6 +15,8 @@ You can use this app even if you miss online network. In that case, this app wou
 
 - Create 'pouchdb' database on your Cloudant(CouchDB) instance.
 
+    - This Cloudant instance need to be configured to allow Cross-Origin access. See http://dotnsf.blog.jp/archives/1070438078.html
+
 - Create Query Index Design Document in that database for **user_id** string field:
 
     - ``{ "index": { "fields": [ { "name": "user_id", "type": "string" } ] }, "name": "user_id-index", .. }``
