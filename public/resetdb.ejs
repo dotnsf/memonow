@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+
+<link rel="shortcut icon" href="./memonow.png" type="image/png"/>
+<link rel="icon" href="./memonow.png" type="image/png"/>
+<link rel="apple-touch-icon" href="./memonow57.png"/>
+
+<title>MemoNow</title>
+<script src="//cdn.jsdelivr.net/pouchdb/5.4.5/pouchdb.min.js"></script>
+
+<script>
+var localDB = new PouchDB( '<%= settings.db_name %>' );
+localDB.destroy().then( function(){
+  location.href = '/';
+}).catch( function( err ){
+  alert( err );
+  location.href = '/';
+});
+</script>
+</head>
+<body>
+</body>
+</html>

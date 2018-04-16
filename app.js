@@ -47,6 +47,12 @@ app.get( '/', function( req, res ){
   res.end();
 });
 
+app.get( '/resetdb', function( req, res ){
+  var template = fs.readFileSync( __dirname + '/public/resetdb.ejs', 'utf-8' );
+  res.write( ejs.render( template, { settings: settings } ) );
+  res.end();
+});
+
 
 app.get( '/twitter', function( req, res ){
   twitter.getRequestToken( function( err, request_token, request_token_secret, results ){

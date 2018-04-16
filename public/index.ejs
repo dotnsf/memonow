@@ -14,8 +14,6 @@
 <script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css" rel="stylesheet"/>
-<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
 <script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
 <script src="//cdn.jsdelivr.net/pouchdb/5.4.5/pouchdb.min.js"></script>
@@ -35,7 +33,6 @@ if( !user_id || user_id === undefined ){
 <% } %>
 }
 
-//. dotnsf-node-red-cloudantNoSQLDB
 var localDB = new PouchDB( '<%= settings.db_name %>' );
 
 var remoteDBURL = 'https://<%= settings.db_username %>:<%= settings.db_password %>@<%= settings.db_username %>.cloudant.com/<%= settings.db_name %>';
