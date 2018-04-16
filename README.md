@@ -11,9 +11,11 @@ You can use this app even if you miss online network. In that case, this app wou
 
 ## Pre-requisite
 
+- Node.js and npm needed to be installed in your server.
+
 - Create 'pouchdb' database on your Cloudant(CouchDB) instance.
 
-- Create Query Index Design Document in that database for 'user_id' string field:
+- Create Query Index Design Document in that database for **user_id** string field:
 
     - ``{ "index": { "fields": [ { "name": "user_id", "type": "string" } ] }, "name": "user_id-index", .. }``
 
@@ -22,6 +24,13 @@ You can use this app even if you miss online network. In that case, this app wou
 - Get consumer_key and consumer_secret in Twitter Apps, and set them with callback_url in settings.js
 
     - https://apps.twitter.com/
+
+
+## Install & Setup
+
+- $ npm install
+
+- $ node app
 
 
 ## Licensing
