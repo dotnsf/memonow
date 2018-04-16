@@ -141,7 +141,8 @@ function getMemos( active_id ){
     }
 
     if( isXS ){
-      $('#memos_list').html( '<select class="selectpicker" id="selectpicker" style="width:100%;"></select>' );
+      //$('#memos_list').html( '<select class="selectpicker" id="selectpicker" style="width:100%;"></select>' );
+      $('#memos_list').html( '<select id="selectpicker" style="width:100%;"></select>' );
       memos.forEach( function( memo ){
         var o = '<option id=\'a_' + memo._id + '\' value=\'' + JSON.stringify( memo ) + '\'>' + memo.subject + '</option>';
         $('#selectpicker').prepend( o );
@@ -149,8 +150,7 @@ function getMemos( active_id ){
       var o = '<option selected id=\'a_new\' value=\'{"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""}\'>(NEW)</option>';
       $('#selectpicker').prepend( o );
 
-      $('.selectpicker').selectpicker({
-      });
+      //$('.selectpicker').selectpicker({});
       $('#selectpicker').change( function(){
         var memo = JSON.parse( $(this).val() );
         edit( memo );
@@ -405,7 +405,7 @@ div{
 <body>
 
 <div class="navbar navbar-default">
-  <div class="container-fluid">
+  <div class="container">
     <div class="navbar-header">
       <a href="/" class="navbar-brand">MemoNow</a>
     </div>
