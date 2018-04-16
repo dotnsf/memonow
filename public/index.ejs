@@ -141,7 +141,7 @@ function getMemos( active_id ){
     }
 
     if( isXS ){
-      $('#memos_list').html( '<select class="selectpicker" id="selectpicker"></select>' );
+      $('#memos_list').html( '<select class="selectpicker" id="selectpicker" style="width:100%;"></select>' );
       memos.forEach( function( memo ){
         var o = '<option id=\'a_' + memo._id + '\' value=\'' + JSON.stringify( memo ) + '\'>' + memo.subject + '</option>';
         $('#selectpicker').prepend( o );
@@ -416,7 +416,7 @@ div{
   <div class="row">
     <div class="col-xs-12 col-sm-3">
       <!-- Selector -->
-      <div class="list-group" id="memos_list">
+      <div class="list-group" id="memos_list" style="width:100%;">
       </div>
     </div>
 
