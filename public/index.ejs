@@ -87,8 +87,8 @@ $(function(){
         var latlng = '[' + lat + ',' + lng + ']';
         $('#memo_latlng').val( latlng );
 
-        var subject = ymdhns + ' ' + latlng;
-        $('#memo_subject').val( subject );
+        //var subject = ymdhns + ' ' + latlng;
+        $('#memo_subject').val( ymdhns );
       }, function( error ){
         $('#memo_subject').val( ymdhns );
       });
@@ -266,8 +266,10 @@ function edit( memo ){
     if( map == null ){
       map = L.map( 'latlng_map' ).setView( latlng, 15 );
       L.tileLayer(
-        'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: 'Map data &copy; <a href="http://openstreetmap.org/">OpenStreetMap</a>',
+        //'http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        'http://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+          //attribution: 'Map data &copy; <a href="http://osm.org/">OpenStreetMap</a>',
+          attribution: '<a href="http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html/" target="_blank">国土地理院</a>',
           maxZoom: 18
         }
       ).addTo( map );
