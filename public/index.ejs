@@ -88,12 +88,12 @@ $(function(){
         $('#memo_latlng').val( latlng );
 
         //var subject = ymdhns + ' ' + latlng;
-        $('#memo_subject').val( ymdhns );
+        //$('#memo_subject').val( ymdhns );
       }, function( error ){
-        $('#memo_subject').val( ymdhns );
+        //$('#memo_subject').val( ymdhns );
       });
     }else{
-      $('#memo_subject').val( ymdhns );
+      //$('#memo_subject').val( ymdhns );
     }
 
     var obj = getBusyOverlay( 'viewport', {color:'black', opacity:0.5, text:'取得中', style:'text-decoration:blink; font-weight:bold; font-size:12px; color:white;' } );
@@ -200,10 +200,17 @@ function addMemo(){
   var id = $('#memo_id').val();
   var rev = $('#memo_rev').val();
   var subject = $('#memo_subject').val();
-  //var body = $('#memo_body').val();
   var body = isXS ? $('#memo_body').val() : simplemde.value();
   var created = $('#memo_created').val();
   var latlng = $('#memo_latlng').val();
+
+  if( !subject ){
+    subject = created;
+    if( latlng ){
+      subject += latlng;
+    }
+  }
+
   var data = { subject: subject, body: body, created: created, latlng: latlng, user_id: user_id };
 
   var updated = new Date();
@@ -267,7 +274,7 @@ function edit( memo ){
       map = L.map( 'latlng_map' ).setView( latlng, 15 );
       L.tileLayer(
         //'http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+        '//cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
           //attribution: 'Map data &copy; <a href="http://osm.org/">OpenStreetMap</a>',
           attribution: '<a href="http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html/" target="_blank">国土地理院</a>',
           maxZoom: 18
