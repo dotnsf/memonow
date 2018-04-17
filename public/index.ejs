@@ -93,7 +93,7 @@ $(function(){
       //$('#memo_subject').val( ymdhns );
     }
 
-    var obj = getBusyOverlay( 'viewport', {color:'black', opacity:0.5, text:'取得中', style:'text-decoration:blink; font-weight:bold; font-size:12px; color:white;' } );
+    var obj = getBusyOverlay( 'viewport', {color:'black', opacity:0.5, text:'loading..', style:'text-decoration:blink; font-weight:bold; font-size:12px; color:white;' } );
     $.ajax({
       type: 'GET',
       url: '/query?user_id=' + user_id,
@@ -174,7 +174,7 @@ function getMemos( active_id ){
 }
 
 function deleteMemo(){
-  if( window.confirm( 'このデータを削除してよろしいですか？' ) ){
+  if( window.confirm( 'Are you really going to delete this memo?' ) ){
     var id = $('#memo_id').val();
     var rev = $('#memo_rev').val();
     localDB.remove( id, rev )
@@ -332,14 +332,14 @@ function login(){
 }
 
 function logout(){
-  if( window.confirm( 'ログアウトしますか？' ) ){
+  if( window.confirm( 'Logout?' ) ){
     removeCookie();
     location.href = '/';
   }
 }
 
 function resetdb(){
-  if( window.confirm( 'ローカルデータベースをリセットしますか？' ) ){
+  if( window.confirm( 'Are you going to reset your local db?' ) ){
     localDB.destroy().then( function(){
       location.href = '/';
     }).catch( function( err ){
