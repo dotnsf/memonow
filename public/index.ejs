@@ -35,7 +35,17 @@ if( !user_id || user_id === undefined ){
 
 var localDB = new PouchDB( '<%= settings.db_name %>' );
 
-var remoteDBURL = 'https://<%= settings.db_username %>:<%= settings.db_password %>@<%= settings.db_username %>.cloudant.com/<%= settings.db_name %>';
+var remoteDBURL = '<%= settings.db_url %>';
+if( !remoteDBURL ){
+  var db_username = '<%= settings.db_username %>';
+  var db_password = '<%= settings.db_password %>';
+  var db_name = '<%= settings.db_name %>';
+  var db_usernamepassword = '';
+  if( db_username && db_password ){
+    db_usernamepassword = db_username + ':' + db_password + '@';
+  }
+  remoteDBURL = 'https://' + ( db_usernamepassword ? db_usernamepassword : '' ) + db_username + '.cloudant.com/' + db_name;
+}
 var remoteDB = new PouchDB( remoteDBURL );
 var doc_ids = [];
 
