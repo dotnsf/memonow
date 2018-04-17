@@ -150,6 +150,7 @@ function getMemos( active_id ){
     if( isXS ){
       $('#memos_list').html( '<select id="selectpicker" style="width:100%;"></select>' );
       memos.forEach( function( memo ){
+        memo = sanitizeMemo( memo );
         var o = '<option id=\'a_' + memo._id + '\' value=\'' + JSON.stringify( memo ) + '\'>' + memo.subject + '</option>';
         $('#selectpicker').prepend( o );
       });
@@ -163,6 +164,7 @@ function getMemos( active_id ){
     }else{
       $('#memos_list').html( '' );
       memos.forEach( function( memo ){
+        memo = sanitizeMemo( memo );
         var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit(' + JSON.stringify( memo ) + ')\'>'
           //+ '<span class="badge">' + memo.user_id + '</span>'
           + '<h3 class=\'list-group-item-heading\'>' + memo.subject + '</h3>'
@@ -394,6 +396,15 @@ function show_layer( cat ){
     objID.style.display = 'none';
     objID.className = 'close';
   }
+}
+
+function sanitize( str ){
+  return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function sanitizeMemo( memo ){
+  if( memo.subject ){ memo.subject = sanitize( memo.subject ); }
+  if( memo.body ){ memo.body = sanitize( memo.body ); }
+  return memo;
 }
 </script>
 <style>
