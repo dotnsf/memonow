@@ -51,6 +51,21 @@ If you want to clean your local db(in browser), you can do that by accessing /re
 https://memonow.mybluemix.net/resetdb
 
 
+## Using Technologies/Services
+
+- IBM Cloudant
+
+    - https://www.ibm.com/jp-ja/marketplace/database-management
+
+- PouchDB
+
+    - https://pouchdb.com/
+
+- Node.js
+
+    - https://nodejs.org/
+
+
 ## Licensing
 
 This code is licensed under MIT.
