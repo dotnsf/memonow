@@ -11,16 +11,16 @@
 <link rel="apple-touch-icon" href="./memonow57.png"/>
 
 <title>MemoNow</title>
-<script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-<script src="//cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-<script src="//cdn.jsdelivr.net/pouchdb/5.4.5/pouchdb.min.js"></script>
-<script src="/cvi_busy_lib.js"></script>
+<script src="https://code.jquery.com/jquery-2.0.3.min.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+<script src="https://cdn.jsdelivr.net/pouchdb/5.4.5/pouchdb.min.js"></script>
+<script src="./cvi_busy_lib.js"></script>
 
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css"/>
-<script src="//cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
 <script>
 var cookie_name = 'cookie_user_id';
 var user_id = getCookie();
@@ -138,7 +138,6 @@ function getMemos( active_id ){
     }
 
     if( isXS ){
-      //$('#memos_list').html( '<select class="selectpicker" id="selectpicker" style="width:100%;"></select>' );
       $('#memos_list').html( '<select id="selectpicker" style="width:100%;"></select>' );
       memos.forEach( function( memo ){
         var o = '<option id=\'a_' + memo._id + '\' value=\'' + JSON.stringify( memo ) + '\'>' + memo.subject + '</option>';
@@ -147,7 +146,6 @@ function getMemos( active_id ){
       var o = '<option selected id=\'a_new\' value=\'{"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""}\'>(NEW)</option>';
       $('#selectpicker').prepend( o );
 
-      //$('.selectpicker').selectpicker({});
       $('#selectpicker').change( function(){
         var memo = JSON.parse( $(this).val() );
         edit( memo );
@@ -270,10 +268,8 @@ function edit( memo ){
     if( map == null ){
       map = L.map( 'latlng_map' ).setView( latlng, 15 );
       L.tileLayer(
-        //'http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        '//cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-          //attribution: 'Map data &copy; <a href="http://osm.org/">OpenStreetMap</a>',
-          attribution: '<a href="http://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html/" target="_blank">国土地理院</a>',
+        'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+          attribution: '<a href="https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html/" target="_blank">国土地理院</a>',
           maxZoom: 18
         }
       ).addTo( map );
@@ -339,6 +335,17 @@ function logout(){
   if( window.confirm( 'ログアウトしますか？' ) ){
     removeCookie();
     location.href = '/';
+  }
+}
+
+function resetdb(){
+  if( window.confirm( 'ローカルデータベースをリセットしますか？' ) ){
+    localDB.destroy().then( function(){
+      location.href = '/';
+    }).catch( function( err ){
+      alert( err );
+      location.href = '/';
+    });
   }
 }
 
