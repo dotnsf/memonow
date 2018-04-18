@@ -148,7 +148,7 @@ function getMemos( active_id ){
     }
 
     if( isXS ){
-      $('#memos_list').html( '<select id="selectpicker" style="width:100%;"></select>' );
+      $('#memos_list').html( '<select class="form-control" id="selectpicker" style="width:100%;"></select>' );
       memos.forEach( function( memo ){
         memo = sanitizeMemo( memo );
         var o = '<option id=\'a_' + memo._id + '\' value=\'' + JSON.stringify( memo ) + '\'>' + memo.subject + '</option>';
@@ -460,8 +460,8 @@ div{
       <input id="memo_rev" type="hidden"/>
       <input id="memo_created" type="hidden"/>
       <input id="memo_latlng" type="hidden"/>
-      <input id="memo_subject" type="text" placeholder="subject"/><br/>
-      <textarea id="memo_body" placeholder="body"></textarea><br/>
+      <input id="memo_subject" type="text" class="form-control" placeholder="subject"/><br/>
+      <textarea id="memo_body" rows="3" class="form-control" placeholder="body"></textarea><br/>
 
       <div><a href="#" id="category_map" onClick="show_layer('map');">(Map)</a></div>
       <div id="layer_map" style="display:none; position:relative;" class="close">
