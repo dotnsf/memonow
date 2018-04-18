@@ -125,7 +125,10 @@ $(function(){
       }
     });
 
-    $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()"><span class="glyphicon glyphicon-user"></span> ' + user_id + '</a></li>' );
+    $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()"><span class="glyphicon glyphicon-user"></span> ' + user_id + '</a></li>'
+      + '<li><a href="/resetdb" title="Reset"><span class="glyphicon glyphicon-refresh"></span> Reset</a></li>'
+      + '<li><a target="_blank" href="//github.com/dotnsf/memonow" title="Source"><span class="glyphicon glyphicon-eye-open"></span> Source</a></li>'
+    );
 
     var a = '<a class="list-group-item list-group-item-warning" href="#">'
       + '<h3 class="list-group-item-heading">Loading..</h3>'
@@ -432,6 +435,43 @@ div{
 #selectpicker{
   width:100%;
 }
+
+@media (max-width: 2000px) {
+    .navbar-header {
+        float: none;
+    }
+    .navbar-left,.navbar-right {
+        float: none !important;
+    }
+    .navbar-toggle {
+        display: block;
+    }
+    .navbar-collapse {
+        border-top: 1px solid transparent;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .navbar-fixed-top {
+	top: 0;
+	border-width: 0 0 1px;
+    }
+    .navbar-collapse.collapse {
+        display: none!important;
+    }
+    .navbar-nav {
+        float: none!important;
+	margin-top: 7.5px;
+    }
+    .navbar-nav>li {
+        float: none;
+    }
+    .navbar-nav>li>a {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .collapse.in{
+  	display:block !important;
+    }
+}
 </style>
 </head>
 <body>
@@ -440,9 +480,16 @@ div{
   <div class="container">
     <div class="navbar-header">
       <a href="/" class="navbar-brand">MemoNow</a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
     </div>
-    <ul class="nav navbar-nav navbar-right" id="navbar">
-    </ul>
+    <div class="collapse navbar-collapse target">
+      <ul class="nav navbar-nav navbar-right" id="navbar">
+      </ul>
+    </div>
   </div>
 </div>
 
