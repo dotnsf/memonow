@@ -162,19 +162,19 @@ function getMemos( active_id ){
 
       $('#selectpicker').change( function(){
         var memo = JSON.parse( $(this).val() );
-        edit( memo );
+        edit( memo._id );
       });
     }else{
       $('#memos_list').html( '' );
       memos.forEach( function( memo ){
         memo = sanitizeMemo( memo );
-        var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit(' + JSON.stringify( memo ) + ')\'>'
+        var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit("' + memo._id + '")\'>'
           + '<h3 class=\'list-group-item-heading\'>' + memo.subject + '</h3>'
           + '<p class=\'list-group-item-text\'>' + memo.updated + '</p>'
           + '</a>';
         $('#memos_list').prepend( a );
       });
-      var a = '<a id=\'a_new\' class=\'list-group-item\' href=\'#\' onClick=\'edit({"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""})\'>'
+      var a = '<a id=\'a_new\' class=\'list-group-item\' href=\'#\' onClick=\'edit("")\'>'
         + '<h3 class=\'list-group-item-heading\'>(NEW)</h3>'
         + '<p class=\'list-group-item-text\'></p>'
         + '</a>';
@@ -249,49 +249,62 @@ function getUUID( myStrong ){
   return new Date().getTime().toString(16) + Math.floor(strong*Math.random()).toString(16);
 }
 
-function edit( memo ){
+function edit( memo_id ){
   $('.list-group-item').removeClass( 'active' );
-  if( memo._id ){
-    $('#a_'+memo._id).addClass( 'active' );
+  if( memo_id ){
+    $('#a_'+memo_id).addClass( 'active' );
+
+    localDB.get( memo_id ).then( function( memo ){
+      $('#memo_id').val( memo._id );
+      $('#memo_rev').val( memo._rev );
+      if( memo.created ){
+        $('#memo_created').val( memo.created );
+      }else{
+        $('#memo_created').val( new Date() );
+      }
+      $('#memo_latlng').val( memo.latlng );
+      $('#memo_subject').val( memo.subject );
+  
+      $('#memo_body').val( memo.body );
+      if( !isXS ){
+        simplemde.value( memo.body );
+      }
+
+      $('#latlng_map').css( 'height','0px' );
+      $('#category_map').css( 'display','none' );
+      var latlng = eval( memo.latlng );
+      if( latlng && latlng.length && latlng[0] && latlng[1] ){
+        $('#latlng_map').css( 'height','300px' );
+        $('#category_map').css( 'display','block' );
+        $('#category_map').html( '['+latlng[0]+','+latlng[1]+']' );
+        if( map == null ){
+          map = L.map( 'latlng_map' ).setView( latlng, 15 );
+          L.tileLayer(
+            'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+              attribution: '<a href="https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html/" target="_blank">国土地理院</a>',
+              maxZoom: 18
+            }
+          ).addTo( map );
+          marker = L.marker( latlng ).addTo( map );
+        }else{
+          var position = new L.LatLng( latlng[0], latlng[1] );
+          map.setView( position, 15 );
+          marker.setLatLng( position );
+        }
+      }
+    }).catch( function( err ){
+      console.log( err );
+    });
   }else{
     $('#a_new').addClass( 'active' );
-  }
-
-  $('#memo_id').val( memo._id );
-  $('#memo_rev').val( memo._rev );
-  if( memo.created ){
-    $('#memo_created').val( memo.created );
-  }else{
+    $('#memo_id').val( '' );
+    $('#memo_rev').val( '' );
     $('#memo_created').val( new Date() );
-  }
-  $('#memo_latlng').val( memo.latlng );
-  $('#memo_subject').val( rev_sanitize( memo.subject ) );
-  
-  $('#memo_body').val( rev_sanitize( memo.body ) );
-  if( !isXS ){
-    simplemde.value( memo.body );
-  }
-
-  $('#latlng_map').css( 'height','0px' );
-  $('#category_map').css( 'display','none' );
-  var latlng = eval( memo.latlng );
-  if( latlng && latlng.length && latlng[0] && latlng[1] ){
-    $('#latlng_map').css( 'height','300px' );
-    $('#category_map').css( 'display','block' );
-    $('#category_map').html( '['+latlng[0]+','+latlng[1]+']' );
-    if( map == null ){
-      map = L.map( 'latlng_map' ).setView( latlng, 15 );
-      L.tileLayer(
-        'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-          attribution: '<a href="https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html/" target="_blank">国土地理院</a>',
-          maxZoom: 18
-        }
-      ).addTo( map );
-      marker = L.marker( latlng ).addTo( map );
-    }else{
-      var position = new L.LatLng( latlng[0], latlng[1] );
-      map.setView( position, 15 );
-      marker.setLatLng( position );
+    $('#memo_latlng').val( '' );
+    $('#memo_subject').val( '' );
+    $('#memo_body').val( '' );
+    if( !isXS ){
+      simplemde.value( '' );
     }
   }
 }
@@ -304,7 +317,7 @@ function activeMemo( id ){
     memo = {"_id":"","_rev":"","created":"","latlng":"","subject":"","body":""};
   }
 
-  edit( memo );
+  edit( id );
 }
 
 function syncDB( reload ){
