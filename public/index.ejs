@@ -169,7 +169,6 @@ function getMemos( active_id ){
       memos.forEach( function( memo ){
         memo = sanitizeMemo( memo );
         var a = '<a id=\'a_' + memo._id + '\' class=\'list-group-item\' href=\'#\' onClick=\'edit(' + JSON.stringify( memo ) + ')\'>'
-          //+ '<span class="badge">' + memo.user_id + '</span>'
           + '<h3 class=\'list-group-item-heading\'>' + memo.subject + '</h3>'
           + '<p class=\'list-group-item-text\'>' + memo.updated + '</p>'
           + '</a>';
@@ -266,9 +265,9 @@ function edit( memo ){
     $('#memo_created').val( new Date() );
   }
   $('#memo_latlng').val( memo.latlng );
-  $('#memo_subject').val( memo.subject );
+  $('#memo_subject').val( rev_sanitize( memo.subject ) );
   
-  $('#memo_body').val( memo.body );
+  $('#memo_body').val( rev_sanitize( memo.body ) );
   if( !isXS ){
     simplemde.value( memo.body );
   }
@@ -402,11 +401,17 @@ function show_layer( cat ){
 }
 
 function sanitize( str ){
-  return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  //. シングルクオートは解決済み、問題はダブルクオート
+  //return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); //. SyntaxError
+  //return str.replace(/"/g, '&#34;').replace(/'/g, '&#39;'); //. SyntaxError
+  return str.replace(/"/g, '\\"').replace(/'/g, '&#39;'); //. SyntaxError は起こらないけど入力内容が変わる
+}
+function rev_sanitize( str ){
+  return str.replace(/\\"/g, '"');
 }
 function sanitizeMemo( memo ){
-  if( memo.subject ){ memo.subject = sanitize( memo.subject ); }
-  if( memo.body ){ memo.body = sanitize( memo.body ); }
+  if( memo.subject ){ memo.subject_ = sanitize( memo.subject ); }else{ memo.subject_ = ""; }
+  if( memo.body ){ memo.body_ = sanitize( memo.body ); }else{ memo.body_ = ""; }
   return memo;
 }
 </script>
