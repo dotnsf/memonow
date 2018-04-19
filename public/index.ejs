@@ -55,6 +55,10 @@ var marker = null;
 var isXS = false;
 var simplemde= null;
 $(function(){
+  init();
+});
+
+function init(){
   //var sw = window.parent.screen.width;
   var sw = window.innerWidth;
   isXS = ( sw < 768 );
@@ -125,8 +129,8 @@ $(function(){
       }
     });
 
-    $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()"><span class="glyphicon glyphicon-user"></span> ' + user_id + '</a></li>'
-      + '<li><a href="/resetdb" title="Reset"><span class="glyphicon glyphicon-refresh"></span> Reset</a></li>'
+    $('#navbar').html( '<li><a href="#" title="Logout" onClick="logout()"><span class="glyphicon glyphicon-user"></span> ' + user_id + '(Logout)</a></li>'
+      + '<li><a href="#" title="Reset" onClick="resetdb()"><span class="glyphicon glyphicon-refresh"></span> Reset DB</a></li>'
       + '<li><a target="_blank" href="//github.com/dotnsf/memonow" title="Source"><span class="glyphicon glyphicon-eye-open"></span> Source</a></li>'
     );
 
@@ -139,7 +143,7 @@ $(function(){
     $('#POST').prop( "disabled", true );
     $('#DELETE').prop( "disabled", true );
   }
-});
+}
 
 function getMemos( active_id ){
   var memos = [];
@@ -368,10 +372,14 @@ function logout(){
 function resetdb(){
   if( window.confirm( 'Are you going to reset your local db?' ) ){
     localDB.destroy().then( function(){
-      location.href = '/';
+      localDB = new PouchDB( '<%= settings.db_name %>' );
+      init();
+      //location.href = '/';
     }).catch( function( err ){
       alert( err );
-      location.href = '/';
+      localDB = new PouchDB( '<%= settings.db_name %>' );
+      init();
+      //location.href = '/';
     });
   }
 }
@@ -414,17 +422,11 @@ function show_layer( cat ){
 }
 
 function sanitize( str ){
-  //. シングルクオートは解決済み、問題はダブルクオート
-  //return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); //. SyntaxError
-  //return str.replace(/"/g, '&#34;').replace(/'/g, '&#39;'); //. SyntaxError
-  return str.replace(/"/g, '\\"').replace(/'/g, '&#39;'); //. SyntaxError は起こらないけど入力内容が変わる
-}
-function rev_sanitize( str ){
-  return str.replace(/\\"/g, '"');
+  return str.replace(/"/g, '&#34;').replace(/'/g, '&#39;');
 }
 function sanitizeMemo( memo ){
-  if( memo.subject ){ memo.subject_ = sanitize( memo.subject ); }else{ memo.subject_ = ""; }
-  if( memo.body ){ memo.body_ = sanitize( memo.body ); }else{ memo.body_ = ""; }
+  if( memo.subject ){ memo.subject = sanitize( memo.subject ); }
+  if( memo.body ){ memo.body = sanitize( memo.body ); }
   return memo;
 }
 </script>
